@@ -37,15 +37,17 @@ export function pickerList(items, query, excluded) {
 
 export function itemDialog(item) {
   const choices = (item?.tags ?? ['fruit']);
-  return dialogFrame(item ? 'Редактировать вкус' : 'Добавить вкус', 'Вкусовые характеристики влияют на автоматический подбор.', `<form data-form="item">
+  return dialogFrame(item ? 'Редактировать вкус' : 'Добавить вкус', '', `<form data-form="item">
     <div class="form-grid"><label>Название<input name="name" required maxlength="90" value="${safe(item?.name)}"></label><label>Производитель<input name="brand" maxlength="90" value="${safe(item?.brand)}"></label></div>
     <label>Описание аромата<input name="note" maxlength="250" value="${safe(item?.note)}" placeholder="Например, груша и цедра"></label>
+    ${item ? '' : '<p class="item-hint" id="item-profile-hint" aria-live="polite">Приложение предложит профиль по названию и описанию.</p>'}
+    <details class="item-options"${item ? ' open' : ''}><summary>Дополнительные параметры</summary><div class="item-options-content">
     <fieldset><legend>Вкусовые группы</legend><div class="tag-options">${Object.entries(families).map(([key, family]) => `<label><input type="checkbox" name="tags" value="${key}"${choices.includes(key) ? ' checked' : ''}> ${family.name}</label>`).join('')}</div></fieldset>
     <div class="form-grid">${Object.entries(metrics).map(([key, metric]) => `<label>${metric.name} (0–5)<input name="${key}" type="number" inputmode="decimal" min="0" max="5" step="0.1" required value="${item?.axes[key] ?? 2.5}"></label>`).join('')}</div>
     <div class="form-grid"><label>Упаковок<input name="packs" type="number" min="0" max="999" step="1" inputmode="numeric" required value="${item?.packs ?? 1}"></label>
     <label>Личная оценка<select name="rating"><option value="0">Без оценки</option>${[1, 2, 3, 4, 5].map((rating) => `<option value="${rating}"${item?.rating === rating ? ' selected' : ''}>${rating} из 5</option>`).join('')}</select></label>
     <label>Максимальная доля в подборе, %<input name="cap" type="number" min="5" max="100" required value="${item?.cap ?? 75}"></label></div>
-    <label class="check-inline"><input type="checkbox" name="inStock"${item?.inStock === false ? '' : ' checked'}> В наличии</label>
+    <label class="check-inline"><input type="checkbox" name="inStock"${item?.inStock === false ? '' : ' checked'}> В наличии</label></div></details>
     ${formEnd('Сохранить', item ? '<button class="button danger" type="button" data-action="delete-item">Удалить вкус</button>' : '')}</form>`);
 }
 

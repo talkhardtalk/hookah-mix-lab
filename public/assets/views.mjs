@@ -20,7 +20,6 @@ const icons = {
   flask: '<path d="M9 4h6m-5 0v6l-5 8a1.3 1.3 0 0 0 1 2h12a1.3 1.3 0 0 0 1-2l-5-8V4M8 15h8"/>',
   download: '<path d="M12 4v11m-4-4 4 4 4-4M5 16v4h14v-4"/>',
   upload: '<path d="M12 16V5m-4 4 4-4 4 4M5 16v4h14v-4"/>',
-  shield: '<path d="M12 3 5 6v5c0 4.5 2.5 7.6 7 10 4.5-2.4 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
   check: '<path d="m5 12 4 4L19 6"/>',
 };
 
@@ -48,8 +47,7 @@ export function nav(page, mobile = false) {
 }
 
 export function rail(page) {
-  return `${brand()}<nav class="rail-links" aria-label="Разделы">${nav(page)}</nav>
-    <div class="rail-footer">${icon('shield')}<div><strong>Для взрослых 18+</strong><small>Данные в этом браузере</small></div></div>`;
+  return `${brand()}<nav class="rail-links" aria-label="Разделы">${nav(page)}</nav>`;
 }
 
 export function topbar(page, available) {

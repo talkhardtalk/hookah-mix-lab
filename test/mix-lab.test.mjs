@@ -3,9 +3,38 @@ import { test } from 'node:test';
 import { catalog, metrics, profiles } from '../public/assets/catalog.mjs';
 import { byId, hasStock, isAvailable, learn, mixDetails, personalization, recommendations, signature, snapshot } from '../public/assets/engine.mjs';
 import { recipes } from '../public/assets/recipes.mjs';
+import { suggestFlavorProfile } from '../public/assets/flavor-profile.mjs';
 import { decodeBackup, encodeBackup, initialState } from '../public/assets/storage.mjs';
 
 const stock = byId(catalog);
+
+test('Профиль нового вкуса определяется по названию и описанию', () => {
+  const lime = suggestFlavorProfile('Лайм', 'Кислый лайм с мятой');
+  assert.deepEqual(lime.tags, ['citrus', 'cold']);
+  assert.equal(lime.axes.acid, 4.2);
+  assert.equal(lime.cap, 50);
+  const lemonade = suggestFlavorProfile('Лимонад', 'Ягодный лимонад');
+  assert.deepEqual(lemonade.tags, ['soda', 'berry']);
+  assert.ok(lemonade.recognized);
+  const candy = suggestFlavorProfile('Кислые леденцы', '');
+  assert.deepEqual(candy.tags, ['candy']);
+  assert.equal(candy.axes.acid, 4.2);
+  const unknown = suggestFlavorProfile('Формула X', '');
+  assert.ok(!unknown.recognized);
+  assert.ok(Object.values(unknown.axes).every((value) => value === 2.5));
+});
+
+test('Новый вкус с предложенным профилем участвует в генерации до окончания упаковки', () => {
+  const name = 'Манго с лаймом';
+  const note = 'Сладкое манго';
+  const { tags, axes, cap } = suggestFlavorProfile(name, note);
+  const item = { id: 'new-mango', name, note, brand: '', tags, axes, cap, packs: 1, inStock: true, rating: 0 };
+  const options = { items: [...catalog, item], pinned: [item.id], onlyNew: true };
+  const generated = recommendations(options);
+  assert.equal(generated.length, 8);
+  assert.ok(generated.every((recipe) => recipe.source === 'generated' && recipe.parts.some((part) => part.id === item.id)));
+  assert.deepEqual(recommendations({ ...options, items: [...catalog, { ...item, packs: 0 }] }), []);
+});
 
 test('47 вкусов, 51 упаковка и четыре позиции по две упаковки', () => {
   assert.equal(stock.size, 47);

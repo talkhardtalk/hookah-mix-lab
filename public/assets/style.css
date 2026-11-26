@@ -50,11 +50,6 @@ h1 { font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif
 .rail-links a { gap: .7rem; padding: .55rem .72rem; border: 1px solid transparent; border-radius: .63rem; }
 .rail-links a:hover, .mobile-nav a:hover { color: var(--ink); }
 .rail-links a[aria-current] { border-color: #38422c; background: #262e1e; color: var(--lime); }
-.rail-footer { display: flex; align-items: center; gap: .65rem; margin-top: auto; color: #c4c7bc; padding: .8rem .45rem 0; border-top: 1px solid var(--edge); }
-.rail-footer .icon { color: #9a9f8f; }
-.rail-footer strong, .rail-footer small { display: block; }
-.rail-footer strong { font-size: .81rem; font-weight: 600; }
-.rail-footer small { font-size: .75rem; color: var(--muted); margin-top: .17rem; }
 .workspace { margin-left: var(--rail); }
 .topbar { height: 4.3rem; border-bottom: 1px solid #282a30; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 clamp(1.2rem, 3vw, 3rem); }
 .location { display: flex; align-items: center; gap: .56rem; font-weight: 630; font-size: .92rem; }
@@ -248,6 +243,10 @@ input[type='checkbox'], input[type='radio'] { width: 1rem; height: 1rem; flex: n
 .pick-item:hover { border-color: #70885a; background: #282e25; }
 .pick-item .icon { color: #b7d996; }
 .modal form { display: grid; gap: .75rem; }
+.item-hint { color: var(--muted); font-size: .87rem; line-height: 1.45; }
+.item-options { border-block: 1px solid var(--edge); }
+.item-options summary { cursor: pointer; color: #dce0e6; font-size: .9rem; font-weight: 600; padding: .7rem 0; }
+.item-options-content { display: grid; gap: .65rem; padding-bottom: .7rem; }
 .modal label:not(.check-inline):not(.search) { display: grid; min-width: 0; gap: .28rem; color: #dcdfe5; font-size: .87rem; font-weight: 570; }
 .form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: .58rem; }
 .modal input:not([type='checkbox']):not([type='radio']):not([type='search']), .modal select, .modal textarea { color: var(--ink); background: #24262c; border: 1px solid #494c57; min-height: 2.6rem; border-radius: .52rem; padding: .42rem .58rem; width: 100%; font-size: 1rem; }

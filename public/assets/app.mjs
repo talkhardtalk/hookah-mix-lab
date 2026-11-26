@@ -1,6 +1,7 @@
-import { catalog, metrics } from './catalog.mjs';
+import { catalog, families, metrics } from './catalog.mjs';
 import { byId, hasStock, isAvailable, recommendations, snapshot } from './engine.mjs';
 import { recipes } from './recipes.mjs';
+import { suggestFlavorProfile } from './flavor-profile.mjs';
 import { decodeBackup, encodeBackup, initialState, stateRepository } from './storage.mjs';
 import { dialogFrame, itemDialog, pickerDialog, pickerList, recipeDialog, recipeLine, recipePickerDialog, recipePickerList, reviewDialog } from './dialogs.mjs';
 import { collectionPage, empty, historyPage, icon, libraryPage, mixPage, nav, pages, rail, recipeCard, statsPage, stockCard, topbar } from './views.mjs';
@@ -325,7 +326,7 @@ const actions = {
     if (nextCard) { nextCard.tabIndex = -1; nextCard.focus({ preventScroll: true }); }
   },
   'stock-tab'(button) { ui.stockTab = button.dataset.id; render(); },
-  'new-item'() { showModal(itemDialog(), { kind: 'item' }); },
+  'new-item'() { showModal(itemDialog(), { kind: 'item', manualProfile: new Set() }); },
   'edit-item'(button) {
     const item = stock().get(button.dataset.id);
     showModal(itemDialog(item), { kind: 'item', item });
@@ -414,13 +415,30 @@ const actions = {
   },
 };
 
+function updateItemProfile(form) {
+  const field = (name) => form.elements.namedItem(name);
+  const { tags, axes, cap, recognized } = suggestFlavorProfile(field('name').value, field('note').value);
+  const { manualProfile } = ui.modal;
+  if (!manualProfile.has('tags')) {
+    ui.modal.suggestedTags = tags;
+    form.querySelectorAll('[name="tags"]').forEach((checkbox) => { checkbox.checked = tags.includes(checkbox.value); });
+    const hint = $('#item-profile-hint');
+    const message = recognized ? `Предложенный профиль — ${tags.map((tag) => families[tag].name).join(', ')}.`
+      : 'Для незнакомого аромата используются базовые значения. Профиль можно уточнить в параметрах.';
+    if (hint.textContent !== message) hint.textContent = message;
+  }
+  for (const [name, value] of Object.entries({ ...axes, cap })) {
+    if (!manualProfile.has(name)) field(name).value = value;
+  }
+}
+
 function saveItem(data) {
   const previous = ui.modal.item;
   const tags = data.getAll('tags');
   if (!data.get('name').trim()) throw new Error('Введи название вкуса.');
   if (!tags.length || tags.length > 4) throw new Error('Выбери от одной до четырёх вкусовых групп.');
   // Сохраняем исходную основную группу, если пользователь её оставил.
-  const priorTags = previous?.tags.filter((tag) => tags.includes(tag)) ?? [];
+  const priorTags = (previous?.tags ?? ui.modal.suggestedTags ?? []).filter((tag) => tags.includes(tag));
   const item = {
     id: previous?.id ?? `item-${crypto.randomUUID()}`, name: data.get('name').trim(), brand: data.get('brand').trim(), note: data.get('note').trim(),
     tags: [...new Set([...priorTags, ...tags])], cap: Number(data.get('cap')), packs: Number(data.get('packs')),
@@ -483,6 +501,13 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('input', (event) => {
   const target = event.target;
+  if (target.form?.dataset.form === 'item' && ui.modal?.manualProfile) {
+    if (target.name === 'name' || target.name === 'note') updateItemProfile(target.form);
+    else if (target.name === 'tags' || target.name === 'cap' || Object.hasOwn(metrics, target.name)) {
+      ui.modal.manualProfile.add(target.name);
+      if (target.name === 'tags') $('#item-profile-hint').textContent = 'Вкусовые группы выбраны вручную.';
+    }
+  }
   if (target.id === 'pick-search') pickResults();
   if (target.id === 'recipe-pick-search') recipePickerResults();
   if (target.id === 'library-search') { ui.libraryQuery = target.value; ui.limit = PAGE_SIZE; libraryResults(); }
@@ -522,6 +547,10 @@ modal.addEventListener('submit', (event) => {
 });
 
 modal.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
+modal.addEventListener('invalid', (event) => {
+  const options = event.target.closest('.item-options');
+  if (options) options.open = true;
+}, true);
 window.addEventListener('hashchange', () => {
   render();
   window.scrollTo(0, 0);
