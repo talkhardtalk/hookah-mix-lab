@@ -122,8 +122,17 @@ test('Копия версии 1 убирает веса, сохраняет пр
 
 test('Повреждённый, посторонний или некорректный импорт отклоняется', () => {
   assert.throws(() => decodeBackup('nope'), /JSON/);
-  assert.throws(() => decodeBackup('{"format":"hookah-mix-lab","version":3}'), /версии 1 или 2/);
+  assert.throws(() => decodeBackup('{"format":"hookah-mix-lab","version":4}'), /версии 1, 2 или 3/);
   const state = initialState();
   state.collection.push(state.collection[0]);
   assert.throws(() => decodeBackup(encodeBackup(state)), /повторяющийся/);
+});
+
+test('Копия версии 2 сохраняет настройки подбора при удалении флага стартового окна', () => {
+  const expected = initialState();
+  expected.settings = { profile: 'fruit', pinned: ['alova'], onlyNew: true };
+  const data = { ...expected, settings: { ...expected.settings, adult: false } };
+  const restored = decodeBackup(JSON.stringify({ format: 'hookah-mix-lab', version: 2, data }));
+  assert.deepEqual(restored, expected);
+  assert.equal(JSON.parse(encodeBackup(restored)).version, 3);
 });

@@ -2,8 +2,8 @@ import { families, metrics, profiles } from './catalog.mjs';
 import { isAvailable } from './engine.mjs';
 import { empty, icon, safe, searchBox } from './views.mjs';
 
-export function dialogFrame(title, subtitle, content, canClose = true) {
-  return `<div class="modal-top"><div><h2 id="dialog-title">${safe(title)}</h2>${subtitle ? `<p>${safe(subtitle)}</p>` : ''}</div>${canClose ? `<button class="icon-button" data-action="close" aria-label="Закрыть">${icon('close')}</button>` : ''}</div>${content}`;
+export function dialogFrame(title, subtitle, content) {
+  return `<div class="modal-top"><div><h2 id="dialog-title">${safe(title)}</h2>${subtitle ? `<p>${safe(subtitle)}</p>` : ''}</div><button class="icon-button" data-action="close" aria-label="Закрыть">${icon('close')}</button></div>${content}`;
 }
 
 function fieldsError() {
@@ -14,13 +14,19 @@ function formEnd(label, extra = '') {
   return `${fieldsError()}<div class="modal-actions">${extra}<button class="button primary" type="submit">${label}</button></div>`;
 }
 
-export function ageDialog() {
-  return dialogFrame('Только для взрослых', 'Hookah Mix Lab предназначен для пользователей от 18 лет.',
-    `<div class="modal-actions"><button class="button primary" data-action="confirm-age">Мне есть 18 лет</button></div>`, false);
-}
-
 export function pickerDialog() {
   return dialogFrame('Выбрать вкус', 'Поиск среди вкусов, которые есть в коллекции.', `${searchBox('pick-search', '', 'Вкус или производитель')}<div class="pick-list" id="pick-results"></div>`);
+}
+
+export function recipePickerDialog() {
+  return dialogFrame('Изменить рецепт', '', `${searchBox('recipe-pick-search', '', 'Название рецепта')}<div class="pick-list" id="recipe-pick-results"></div>`);
+}
+
+export function recipePickerList(choices) {
+  return choices.length ? choices.map(({ recipe, group }) => {
+    const profile = profiles[recipe.profile];
+    return `<button class="pick-item" data-action="open-recipe-editor" data-id="${safe(recipe.id)}"><span class="flavor-dot" style="--tint:${profile.color}"></span><span><b>${safe(recipe.name)}</b><small>${group} · ${profile.name}</small></span>${icon('edit')}</button>`;
+  }).join('') : empty('Рецепты не найдены', 'Попробуй другое название.', 'search');
 }
 
 export function pickerList(items, query, excluded) {

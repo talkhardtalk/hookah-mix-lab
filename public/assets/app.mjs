@@ -2,7 +2,7 @@ import { catalog, metrics } from './catalog.mjs';
 import { byId, hasStock, isAvailable, recommendations, snapshot } from './engine.mjs';
 import { recipes } from './recipes.mjs';
 import { decodeBackup, encodeBackup, initialState, stateRepository } from './storage.mjs';
-import { ageDialog, dialogFrame, itemDialog, pickerDialog, pickerList, recipeDialog, recipeLine, reviewDialog } from './dialogs.mjs';
+import { dialogFrame, itemDialog, pickerDialog, pickerList, recipeDialog, recipeLine, recipePickerDialog, recipePickerList, reviewDialog } from './dialogs.mjs';
 import { collectionPage, empty, historyPage, icon, libraryPage, mixPage, nav, pages, rail, recipeCard, statsPage, stockCard, topbar } from './views.mjs';
 
 const $ = (selector) => document.querySelector(selector);
@@ -172,7 +172,7 @@ function showModal(content, data) {
 }
 
 function closeModal() {
-  if (!modal.open || ui.modal?.kind === 'age') return;
+  if (!modal.open) return;
   const opener = ui.modal?.opener;
   modal.close();
   ui.modal = null;
@@ -182,6 +182,12 @@ function closeModal() {
 function pickResults() {
   const excluded = state.settings.pinned[ui.modal.slot === 0 ? 1 : 0];
   $('#pick-results').innerHTML = pickerList(state.collection, $('#pick-search').value, excluded);
+}
+
+function recipePickerResults() {
+  const query = normalized($('#recipe-pick-search').value);
+  const matches = [...ui.modal.choices.values()].filter(({ recipe }) => normalized(recipe.name).includes(query));
+  $('#recipe-pick-results').innerHTML = recipePickerList(matches);
 }
 
 function updateRecipeSum() {
@@ -256,12 +262,6 @@ function changePins(pinned) {
 
 const actions = {
   close: closeModal,
-  'confirm-age'() {
-    setSettings({ adult: true });
-    modal.close();
-    ui.modal = null;
-    main.focus({ preventScroll: true });
-  },
   pick(button) {
     const slot = Number(button.dataset.id);
     showModal(pickerDialog(), { kind: 'pick', slot });
@@ -341,7 +341,23 @@ const actions = {
     updateCollection(state.collection.map((entry) => entry.id === item.id ? { ...entry, inStock } : entry), inStock ? 'Вкус снова в наличии.' : 'Вкус исключён из подбора.');
   },
   'new-recipe'() { editRecipe(); },
-  'edit-recipe'(button) { editRecipe(lookup(button.dataset.id)); },
+  'choose-recipe-to-edit'() {
+    const choices = new Map();
+    for (const [group, entries] of [['Мой рецепт', state.custom], ['Избранное', state.favorites], ['Стартовый рецепт', recipes]]) {
+      for (const recipe of entries) {
+        if (!choices.has(recipe.id)) choices.set(recipe.id, { recipe, group });
+      }
+    }
+    showModal(recipePickerDialog(), { kind: 'pick-recipe', choices });
+    recipePickerResults();
+    if (matchMedia('(pointer: fine)').matches) $('#recipe-pick-search').focus();
+  },
+  'open-recipe-editor'(button) {
+    const choice = ui.modal.choices.get(button.dataset.id);
+    if (!choice) return;
+    editRecipe(choice.recipe);
+    modal.querySelector('.modal-top button').focus({ preventScroll: true });
+  },
   'add-line'() {
     const list = $('#recipe-lines');
     if (list.children.length >= 6) return;
@@ -391,7 +407,7 @@ const actions = {
   'confirm-import'() {
     const next = ui.modal.next;
     closeModal();
-    commit({ ...next, settings: { ...next.settings, adult: state.settings.adult } }, 'Резервная копия восстановлена.', true);
+    commit(next, 'Резервная копия восстановлена.', true);
     ui.mode = 'initial';
     recalculate();
     render();
@@ -468,6 +484,7 @@ document.addEventListener('click', (event) => {
 document.addEventListener('input', (event) => {
   const target = event.target;
   if (target.id === 'pick-search') pickResults();
+  if (target.id === 'recipe-pick-search') recipePickerResults();
   if (target.id === 'library-search') { ui.libraryQuery = target.value; ui.limit = PAGE_SIZE; libraryResults(); }
   if (target.id === 'stock-search') { ui.stockQuery = target.value; stockResults(); }
   if (target.name === 'percent' && ui.modal?.kind === 'recipe') updateRecipeSum();
@@ -521,4 +538,3 @@ window.addEventListener('storage', () => {
 
 recalculate();
 render();
-if (!state.settings.adult) showModal(ageDialog(), { kind: 'age' });

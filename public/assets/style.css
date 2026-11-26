@@ -167,7 +167,7 @@ input[type='checkbox'], input[type='radio'] { width: 1rem; height: 1rem; flex: n
 .why { margin-top: .65rem; padding: .15rem 0; color: #d5d7e0; font-size: .86rem; }
 .why summary { cursor: pointer; padding: .32rem 0; min-height: 2rem; }
 .why p { font-size: .86rem; color: var(--muted); line-height: 1.47; padding: .08rem 0 .25rem; }
-.recipe-actions { display: flex; justify-content: space-between; gap: .3rem; border-top: 1px solid #353740; padding-top: .58rem; }
+.recipe-actions { display: flex; justify-content: end; border-top: 1px solid #353740; padding-top: .58rem; }
 .recipe-actions .button { min-height: 2.45rem; padding-inline: .48rem; }
 .stock-warning { color: #edba90; font-size: .82rem; margin-top: .38rem; }
 .empty { display: grid; justify-items: center; text-align: center; gap: .45rem; padding: 2.2rem 1rem; grid-column: 1 / -1; border: 1px dashed #3e414a; border-radius: var(--radius); background: #17191d; }
@@ -179,6 +179,7 @@ input[type='checkbox'], input[type='radio'] { width: 1rem; height: 1rem; flex: n
 .page-heading h1 { font-size: clamp(1.85rem, 4.5vw, 3.12rem); line-height: 1.04; letter-spacing: -.055em; }
 .page-heading p { margin-top: .5rem; line-height: 1.5; color: var(--muted); }
 .toolbar { display: grid; gap: .8rem; padding: .85rem 1rem; }
+.library-tabs { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
 .tabs { display: flex; flex-wrap: wrap; gap: .25rem; }
 .tabs button { border: 1px solid transparent; background: transparent; border-radius: .57rem; color: #c2c5d0; padding: .44rem .68rem; min-height: 2.5rem; font-size: .89rem; font-weight: 600; }
 .tabs button:hover { background: #24262c; }

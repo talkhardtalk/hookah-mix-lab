@@ -118,8 +118,7 @@ export function recipeCard(recipe, state, stock, canUse) {
     <p class="recipe-text">${safe(text)}</p>
     ${axesBars(axes)}
     <details class="why"><summary>Почему сочетаются</summary><p>${safe(recipe.reasoning || 'Совместимость этого авторского рецепта можно уточнить после оценки.')}</p></details>
-    <div class="recipe-actions"><button class="button subtle" data-action="edit-recipe" data-id="${safe(recipe.id)}" aria-label="Пропорции — ${safe(recipe.name)}">${icon('edit')} Пропорции</button>
-    <button class="button compact" data-action="review" data-id="${safe(recipe.id)}" aria-label="Оценить — ${safe(recipe.name)}">${icon('star')} Оценить</button></div>
+    <div class="recipe-actions"><button class="button compact" data-action="review" data-id="${safe(recipe.id)}" aria-label="Оценить — ${safe(recipe.name)}">${icon('star')} Оценить</button></div>
     ${canUse ? '' : '<p class="stock-warning">Часть ингредиентов сейчас отсутствует.</p>'}</article>`;
 }
 
@@ -130,7 +129,8 @@ export function searchBox(id, value, placeholder) {
 export function libraryPage(ui) {
   const tabs = { all: 'Вся база', favorites: 'Избранное', custom: 'Мои рецепты' };
   return `${heading('База рецептов', `${recipes.length} стартовых рецептов с ориентирами по вкусу и пропорциям.`, `<button class="button primary" data-action="new-recipe">${icon('plus')} Свой рецепт</button>`)}
-  <section class="panel toolbar"><div class="tabs" aria-label="Рецепты">${Object.entries(tabs).map(([id, title]) => `<button data-action="library-tab" data-id="${id}" aria-pressed="${ui.libraryTab === id}">${title}</button>`).join('')}</div>
+  <section class="panel toolbar"><div class="library-tabs"><div class="tabs" aria-label="Рецепты">${Object.entries(tabs).map(([id, title]) => `<button data-action="library-tab" data-id="${id}" aria-pressed="${ui.libraryTab === id}">${title}</button>`).join('')}</div>
+  ${ui.libraryTab === 'custom' ? `<button class="button secondary" data-action="choose-recipe-to-edit">${icon('edit')} Изменить рецепт</button>` : ''}</div>
   <div class="filter-row">${searchBox('library-search', ui.libraryQuery, 'Найти рецепт или вкус')}<label class="check-inline"><input type="checkbox" id="in-stock-only"${ui.stockOnly ? ' checked' : ''}> Есть в наличии</label></div>
   ${profileChips(ui.libraryProfile, 'library-profile')}</section><section id="library-results" class="results" aria-label="Рецепты"></section>`;
 }

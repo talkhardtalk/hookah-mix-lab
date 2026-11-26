@@ -2,8 +2,8 @@ import { catalog, families, metrics, profiles } from './catalog.mjs';
 import { feedbackTags, isPositiveTag } from './engine.mjs';
 
 export const FORMAT = 'hookah-mix-lab';
-export const VERSION = 2;
-export const DEFAULT_SETTINGS = { profile: '', pinned: [], onlyNew: false, adult: false };
+export const VERSION = 3;
+export const DEFAULT_SETTINGS = { profile: '', pinned: [], onlyNew: false };
 const scope = globalThis.location?.pathname.replace(/index\.html$/, '').replace(/\/$/, '') || '/';
 const storageKey = `${FORMAT}:${scope}`;
 
@@ -144,7 +144,6 @@ export function validateState(raw, version = VERSION) {
   const settings = object(value.settings, 'настройки');
   const pinned = unique(list(settings.pinned, 'выбранные вкусы', 2).map(flavorId), 'выбранные вкусы');
   return { collection, custom, favorites, reviews, settings: {
-    adult: flag(settings.adult, 'подтверждение возраста'),
     onlyNew: flag(settings.onlyNew, 'режим подбора'), pinned: pinned.filter((key) => collection.some((entry) => entry.id === key)),
     profile: settings.profile === '' ? '' : known(settings.profile, profiles, 'профиль'),
   } };
@@ -157,8 +156,8 @@ export function encodeBackup(state) {
 export function decodeBackup(text) {
   let envelope;
   try { envelope = JSON.parse(text); } catch { throw new Error('Файл должен содержать корректный JSON.'); }
-  if (envelope?.format !== FORMAT || ![1, VERSION].includes(envelope.version)) {
-    throw new Error('Нужна резервная копия Hookah Mix Lab версии 1 или 2.');
+  if (envelope?.format !== FORMAT || ![1, 2, VERSION].includes(envelope.version)) {
+    throw new Error('Нужна резервная копия Hookah Mix Lab версии 1, 2 или 3.');
   }
   return validateState(envelope.data, envelope.version);
 }
