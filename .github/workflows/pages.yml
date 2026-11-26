@@ -28,9 +28,12 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       pages: write
       id-token: write
+    env:
+      PAGES_ARTIFACT_NAME: github-pages-${{ github.run_attempt }}
     concurrency:
       group: github-pages
       cancel-in-progress: false
@@ -43,7 +46,27 @@ jobs:
           persist-credentials: false
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
+        id: upload
         with:
+          name: ${{ env.PAGES_ARTIFACT_NAME }}
           path: public
+      - name: Дождаться архива перед публикацией
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
+        shell: bash
+        run: |
+          for attempt in {1..10}; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+              --method GET -f name="$PAGES_ARTIFACT_NAME" \
+              --jq '.artifacts[] | select(.expired == false) | .id' | grep -Fxq "$PAGES_ARTIFACT_ID"; then
+              exit 0
+            fi
+            if (( attempt < 10 )); then sleep 3; fi
+          done
+          echo "::error::Архив $PAGES_ARTIFACT_NAME не появился в списке артефактов GitHub Actions."
+          exit 1
       - uses: actions/deploy-pages@v4
         id: deployment
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}

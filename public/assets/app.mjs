@@ -78,14 +78,14 @@ function setSettings(patch) {
   commit({ ...state, settings: { ...state.settings, ...patch } });
 }
 
-function recalculate({ append = false } = {}) {
+function recalculate({ append = false, exclude = [] } = {}) {
   const pageSize = ui.mode === 'initial' ? 6 : ui.mode === 'random' ? 1 : 8;
   const seen = append ? ui.results : [];
   const batch = recommendations({
     items: state.collection, custom: state.custom, reviews: state.reviews,
     pinned: ui.mode === 'initial' ? [] : state.settings.pinned,
     profile: state.settings.profile, limit: pageSize + 1, random: ui.mode === 'random',
-    onlyNew: ui.mode !== 'initial' && state.settings.onlyNew, seen,
+    onlyNew: ui.mode !== 'initial' && state.settings.onlyNew, seen: append ? seen : exclude,
   });
   const visible = batch.slice(0, pageSize);
   ui.results = [...seen, ...visible];
@@ -93,21 +93,21 @@ function recalculate({ append = false } = {}) {
   return visible;
 }
 
-function cardMarkup(list) {
+function cardMarkup(list, options) {
   const available = stock();
-  return list.map((recipe) => recipeCard(recipe, state, available, hasStock(recipe.parts, available))).join('');
+  return list.map((recipe) => recipeCard(recipe, state, available, hasStock(recipe.parts, available), options)).join('');
 }
 
-function showCards(list) {
+function showCards(list, options) {
   ui.visibleRecipes = byId(list);
-  return `<div class="recipes-grid">${cardMarkup(list)}</div>`;
+  return `<div class="recipes-grid">${cardMarkup(list, options)}</div>`;
 }
 
 function renderResults() {
   const element = $('#results');
   const title = ui.mode === 'initial' ? 'Идеи из коллекции' : ui.mode === 'random' ? 'Случайный микс' : 'Подобранные сочетания';
   element.innerHTML = `<div class="result-heading"><div><h2 id="results-title" tabindex="-1">${title}</h2><p>${ui.mode === 'initial' ? 'Экспериментальные рецепты из доступных вкусов.' : 'Характеристики вкуса ориентировочные.'}</p></div>${ui.results.length ? `<span class="count" id="results-count" aria-live="polite">Показано ${ui.results.length}</span>` : ''}</div>
-  ${ui.results.length ? showCards(ui.results) : empty('Подходящих сочетаний пока нет', 'Попробуй изменить профиль или один из выбранных вкусов.')}
+  ${ui.results.length ? showCards(ui.results, { showNextRandom: ui.mode === 'random' }) : empty('Подходящих сочетаний пока нет', 'Попробуй изменить профиль или один из выбранных вкусов.')}
   ${ui.moreResults ? '<div class="load-more"><button class="button secondary" data-action="more-mixes">Показать ещё</button></div>' : ''}`;
 }
 
@@ -167,6 +167,7 @@ function render() {
 function showModal(content, data) {
   const opener = modal.open ? ui.modal?.opener : document.activeElement;
   ui.modal = { ...data, opener };
+  modal.dataset.kind = data.kind;
   modal.innerHTML = content;
   if (!modal.open) modal.showModal();
   modal.scrollTop = 0;
@@ -287,6 +288,19 @@ const actions = {
   },
   recommend() { showRecommendations('recommend'); },
   random() { showRecommendations('random'); },
+  'next-random'() {
+    const previous = ui.results;
+    recalculate({ exclude: previous });
+    if (!ui.results.length) {
+      ui.results = previous;
+      notify('При этих фильтрах доступен один микс.');
+      return;
+    }
+    renderResults();
+    const button = $('#results [data-action="next-random"]');
+    button.focus({ preventScroll: true });
+    button.scrollIntoView({ block: 'nearest' });
+  },
   'more-mixes'(button) {
     const grid = $('#results .recipes-grid');
     const firstNewIndex = ui.results.length;

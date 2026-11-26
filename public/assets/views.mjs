@@ -99,7 +99,7 @@ export function axesBars(axes) {
   ).join('')}</div>`;
 }
 
-export function recipeCard(recipe, state, stock, canUse) {
+export function recipeCard(recipe, state, stock, canUse, { showNextRandom = false } = {}) {
   const { ingredients, axes, text } = mixDetails(recipe, stock);
   const profile = profiles[recipe.profile];
   const saved = state.favorites.some((favorite) => favorite.id === recipe.id);
@@ -116,7 +116,7 @@ export function recipeCard(recipe, state, stock, canUse) {
     <p class="recipe-text">${safe(text)}</p>
     ${axesBars(axes)}
     <details class="why"><summary>Почему сочетаются</summary><p>${safe(recipe.reasoning || 'Совместимость этого авторского рецепта можно уточнить после оценки.')}</p></details>
-    <div class="recipe-actions"><button class="button compact" data-action="review" data-id="${safe(recipe.id)}" aria-label="Оценить — ${safe(recipe.name)}">${icon('star')} Оценить</button></div>
+    <div class="recipe-actions">${showNextRandom ? `<button class="button secondary" data-action="next-random">${icon('shuffle')} Ещё случайный</button>` : ''}<button class="button compact" data-action="review" data-id="${safe(recipe.id)}" aria-label="Оценить — ${safe(recipe.name)}">${icon('star')} Оценить</button></div>
     ${canUse ? '' : '<p class="stock-warning">Часть ингредиентов сейчас отсутствует.</p>'}</article>`;
 }
 

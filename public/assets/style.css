@@ -162,7 +162,7 @@ input[type='checkbox'], input[type='radio'] { width: 1rem; height: 1rem; flex: n
 .why { margin-top: .65rem; padding: .15rem 0; color: #d5d7e0; font-size: .86rem; }
 .why summary { cursor: pointer; padding: .32rem 0; min-height: 2rem; }
 .why p { font-size: .86rem; color: var(--muted); line-height: 1.47; padding: .08rem 0 .25rem; }
-.recipe-actions { display: flex; justify-content: end; border-top: 1px solid #353740; padding-top: .58rem; }
+.recipe-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: .4rem; border-top: 1px solid #353740; padding-top: .58rem; }
 .recipe-actions .button { min-height: 2.45rem; padding-inline: .48rem; }
 .stock-warning { color: #edba90; font-size: .82rem; margin-top: .38rem; }
 .empty { display: grid; justify-items: center; text-align: center; gap: .45rem; padding: 2.2rem 1rem; grid-column: 1 / -1; border: 1px dashed #3e414a; border-radius: var(--radius); background: #17191d; }
@@ -286,6 +286,7 @@ select { appearance: none; padding-right: 1.9rem !important; background-image: l
   .mobile-nav { position: fixed; z-index: 2; inset: auto 0 0; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: .05rem; padding: .23rem .3rem calc(.25rem + env(safe-area-inset-bottom)); background: #17191cf7; border-top: 1px solid #363942; }
   .mobile-nav a { flex-direction: column; justify-content: center; gap: .2rem; font-size: .74rem; text-align: center; border-radius: .55rem; }
   .mobile-nav a[aria-current] { color: var(--lime); background: #293322; }
+  [data-action='next-random'] { scroll-margin-bottom: calc(3.7rem + env(safe-area-inset-bottom)); }
   .toast { bottom: calc(3.9rem + env(safe-area-inset-bottom)); }
 }
 @media (max-width: 38rem) {
@@ -327,6 +328,7 @@ select { appearance: none; padding-right: 1.9rem !important; background-image: l
   .numbers span { font-size: .79rem; }
   .stats-grid, .data-panel { grid-template-columns: minmax(0,1fr); display: grid; }
   .modal { margin: auto auto 0; width: 100%; max-height: 93dvh; border-radius: 1.08rem 1.08rem 0 0; padding: .92rem .82rem calc(.92rem + env(safe-area-inset-bottom)); }
+  .modal[data-kind='review'] { margin: auto; width: min(24rem, calc(100% - 1.6rem)); border-radius: 1.08rem; padding: .92rem .82rem; }
 }
 @media (max-width: 21.5rem) {
   .builder-actions { align-items: stretch; flex-direction: column; }

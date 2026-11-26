@@ -107,6 +107,23 @@ test('Отсутствие, ноль упаковок и удалённый вк
   assert.equal(recommendations({ items: changed, pinned: ['alova'], profile: 'fruit', random: true }).length, 1);
 });
 
+test('Следующий случайный микс учитывает фильтры и исключает показанный состав', () => {
+  const options = { items: catalog, pinned: ['alova', 'pear'], profile: 'fresh', onlyNew: true, random: true };
+  const first = recommendations(options);
+  const next = recommendations({ ...options, seen: first });
+  assert.equal(first.length, 1);
+  assert.equal(next.length, 1);
+  assert.notEqual(signature(first[0].parts, false), signature(next[0].parts, false));
+  assert.equal(next[0].profile, 'fresh');
+  assert.equal(next[0].source, 'generated');
+  assert.ok(options.pinned.every((id) => next[0].parts.some((part) => part.id === id)));
+
+  const single = { items: catalog.filter((item) => ['kiwi', 'pear'].includes(item.id)), profile: 'fruit', random: true };
+  const shown = recommendations(single);
+  assert.equal(shown.length, 1);
+  assert.deepEqual(recommendations({ ...single, seen: shown }), []);
+});
+
 test('Одна оценка меняет сигнал ограниченно, повторения усиливают его', () => {
   const recipe = snapshot(recipes[0], stock);
   const feedback = { recipe, rating: 5 };
