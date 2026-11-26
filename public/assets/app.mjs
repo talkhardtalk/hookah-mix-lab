@@ -340,7 +340,7 @@ const actions = {
     if (nextCard) { nextCard.tabIndex = -1; nextCard.focus({ preventScroll: true }); }
   },
   'stock-tab'(button) { ui.stockTab = button.dataset.id; render(); },
-  'new-item'() { showModal(itemDialog(), { kind: 'item', manualProfile: new Set() }); },
+  'new-item'() { showModal(itemDialog(), { kind: 'new-item', manualProfile: new Set() }); },
   'edit-item'(button) {
     const item = stock().get(button.dataset.id);
     showModal(itemDialog(item), { kind: 'item', item });
